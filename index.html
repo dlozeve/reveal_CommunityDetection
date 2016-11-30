@@ -101,13 +101,13 @@
 	  <section>
 	    <h2>Solution Quality</h2>
 	    <ul>
-	      <li> Quality functions:
+	      <li class="fragment" data-fragment-index="0"> Quality functions:
 		<ul>
 		  <li> overlap
 		  <li> conductance
 		  <li> modularity
 		</ul>
-	      <li> Cross-validation
+	      <li class="fragment" data-fragment-index="1"> Cross-validation
 	    </ul>
 	  </section>
 
@@ -242,11 +242,11 @@ def spectralclustering(g, k, l = None):
 	  <section data-state="ringofcliques">
 	    <h5>Limitations</h5>
 	    <ul>
-	      <li> Modularity maximization is NP-hard
-	      <li> The measure is not as good as it looks (preferential scale for communities)
-	      <li> high-$Q$ partition not necessarily similar to each other
+	      <li class="fragment" data-fragment-index="0"> Modularity maximization is NP-hard
+	      <li class="fragment" data-fragment-index="1"> high-$Q$ partition not necessarily similar to each other
+	      <li class="fragment" data-fragment-index="2"> The measure is not as good as it looks (preferential scale for communities)
 	    </ul>
-	    <div id="ringofcliques"></div>
+	    <div id="ringofcliques" class="fragment" data-fragment-index="2"></div>
 	  </section>
 	</section>
 
