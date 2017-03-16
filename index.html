@@ -29,277 +29,118 @@
       <div class="slides">
 
 	<section>
-	  <h1>Community Detection in Social Networks</h1>
+	  <h1>Détection de communautés dans les réseaux sociaux</h1>
 	  <h6>Teven Le Scao, Dimitri Lozeve</h6>
+	  
 	</section>
 
+	<section data-state="sbm">
+	  <h2>Détection de communautés : le problème</h2>
+	  <div id="sbm"></div>
+	</section>
+	
 	<section>
-	  <h1>Outline</h1>
+	  <h1>Plan</h1>
 	  <ol>
-	    <li> <b>Definitions</b>
-	    <li> <b>Validation</b>
-	    <li> <b>Methods</b>
-	    <li> <b>Next steps</b>
+	    <li> <b>Visualisation d'une méthode : la modularité</b>
+	    <li> <b>Stochastic Block Model</b>
+	    <li> <b>Le problème de la recommandation : Prestashop</b>
 	  </ol>
 	</section>
 
-	
-	
+
 	<section>
-	  <h1>Definitions</h1>
+	  <h1>Visualisation d'une méthode : la modularité</h1>
 	</section>
 
 	<section>
-	  <section>
-	    <h2>Communities</h2>
-	    <h5>Classic view:</h5>
-	    <ul>
-	      <li> dense subgraphs well separated from each other
-	      <li> <em>strong community:</em> internal degree
-		greater than external degree
-	    </ul>
-	  </section>
-	  
-	  <section>
-	    <h5>Modern view:</h5>
-	    <ul>
-	      <li> focus on the <em>probability</em> that vertices
-		share edges with a subgraph
-	      <li> <em>strong community:</em> subgraph whose
-		vertices has a higher probability to be linked to
-		every vertex of the subgraph than to any other vertex
-		of the graph
-	      <li> <em>weak community:</em> subgraph such that the
-		average edge probability of each vertex with the other
-		members of the group exceeds the average edge
-		probability of the vertex with the vertices of any
-		other group
-	    </ul>
-	  </section>
+	  <h2>Modularité</h2>
+	  $$ Q = \frac{1}{2m} \sum_{i,j} \left( A_{ij} - \frac{k_i k_j}{2m} \right) \delta(C_i, C_j) $$
 	</section>
 	
 	<section>
-	  <h2>Structure</h2>
-	  <img src="structure.png" alt="structure">
+	  <iframe width="1120" height="630" src="https://www.youtube.com/embed/dGa-TXpoPz8" frameborder="0" allowfullscreen></iframe>
 	</section>
 
 	<section>
-	  <h2>Applications</h2>
-	  <ul>
-	    <li> Information compression
-	    <li> Better understanding of the network
-	    <li> Recommendation systems
-	  </ul>
+	  <h2>Intérêts de la modularité</h2>
+	  <img src="dendrogram.png" alt="dendrogram">
 	</section>
 
 	<section>
-	  <h1>Validation</h1>
+	  <h2>Intérêts de la modularité</h2>
+	  <font size="+15">$$ \mathcal{O}(n \log n) $$</font>
+	  vs
+	  $$ \mathcal{O}(n \log^2 n) $$
+	  vs
+	  $$ \mathcal{O}(n^2) $$
 	</section>
 
 	<section>
-	  <section>
-	    <h2>Solution Quality</h2>
-	    <ul>
-	      <li class="fragment" data-fragment-index="0"> Quality functions:
-		<ul>
-		  <li> overlap
-		  <li> conductance
-		  <li> modularity
-		</ul>
-	      <li class="fragment" data-fragment-index="1"> Cross-validation
-	    </ul>
+	  <section data-state="ringofcliques">
+	    <h2>Limitations de la modularité</h2>
+	    <div id="ringofcliques"></div>
 	  </section>
 
 	  <section>
-	    <pre class="stretch"><code data-trim class="py">
-def overlap(r, n, node2cluster, cluster2node):
-    maximum = 0
-    for pi in itertools.permutations(range(len(cluster2node)), r):
-        total = 0
-        for i in range(r*n):
-            if node2cluster[i] == pi[int(i/n)]:
-                total += 1
-        result = (float(total)/(r*n) - float(1)/r)/(1 - float(1)/r)
-        if result > maximum:
-            maximum = result
-    return maximum
-
-def modularity(graph, edgeprob, labels):
-    n = len(graph)
-    m = len(graph.edges())
-    A = nx.adjacency_matrix(graph).todense()
-    res = 0
-    for i in range(n):
-        for j in range(n):
-            if labels[i] == labels[j]:
-                res += A[i,j] - edgeprob[i][j]
-    return res / (2*m)
-	    </code></pre>
+	    <h2>Modularité</h2>
+	    $$ Q = \frac{1}{2m} \sum_{i,j} \left( A_{ij} - \frac{k_i k_j}{2m} \right) \delta(C_i, C_j) $$
 	  </section>
+	</section>
 
-	  <section>
-	    <img src="modularityvsq.png" alt="modularity against q">
-	    <br/>
-	    Modularity as a function of the number of clusters
-	  </section>
+
+
+	
+	<section>
+	  <h1>Stochastic Block Model</h1>
 	</section>
 
 	<section>
 	  <section data-state="erdosrenyi">
-	    <h2>Random graph models</h2>
-	    <h5>Erdős-Rényi</h5>
+	    <h2>Modèles de graphes aléatoires</h2>
+	    <h5>Erdös-Rényi</h5>
 	    <div id="erdosrenyi"></div>
 	  </section>
 
-	  <section>
+	  <section data-state="sbm2">
 	    <h5>Stochastic Block Model</h5>
-	    <pre class="stretch"><code class="py">
-def findsubset(e, partition):
-    for i in range(len(partition)):
-        if e in partition[i]:
-            return i
-    return -1
-
-def stochasticblockmodel(n, partition, edge_prob):
-    """Returns a stochastic block model graph
-    """
-    G = nx.Graph()
-    G.add_nodes_from(range(n))
-    for i in range(n):
-        for j in range(i):
-            r_i = findsubset(i, partition)
-            r_j = findsubset(j, partition)
-            u = np.random.random() # random number in [0,1]
-            if u < edge_prob[r_i][r_j]:
-                G.add_edge(i, j)
-    return G
-	    </code></pre>
-	  </section>
-	  
-	  <section data-state="sbm">
-	    <h5>Stochastic Block Model</h5>
-	    <div id="sbm"></div>
+	    <div id="sbm2"></div>
 	  </section>
 	</section>
 
 	<section>
-	  <h2>Ground-truth networks</h2>
-	  <ul>
-	    <li> Networks with known community structure <em>(metadata)</em>
-	    <li> Examples:
-	      <ul>
-		<li> Zachary's karate club
-		<li> American college football network
-		<li> Lusseau's network of bottlenose dolphins
-	      </ul>
-	  </ul>
+	  Test standard pour les méthodes de clustering
+	  <br/>
+	  $\longrightarrow$ Remise en cause
+	</section>
+
+	<section>
+	  $$ \deg(x) = \sum_{j=1}^k X_j $$
+	  où $\;\; X_j = \mathrm{Binom}\left(\left|B_j\right|, P_{ij}\right) $
+	</section>
+
+	<section>
+	  <img style="background-color:white" src="youtubedegree.png" alt="youtubedegree">
+	</section>
+
+
+
+	<section>
+	  <h1>Le problème de la recommandation : Prestashop</h1>
+	</section>
+
+	<section>
+	  <img src="users.png" alt="users" />
+	</section>
+
+	<section>
+	  <img src="degreeusers.png" alt="degreeusers" />
 	</section>
 
 	
-	<section>
-	  <h1>Methods</h1>
-	</section>
-
-	<section>
-	  <section>
-	    <h2>Spectral Clustering</h2>
-	    <pre class="stretch"><code data-trim class="py">
-def spectralclustering(g, k, l = None):
-    """Computes the spectral clustering of graph g in k clusters, 
-    using the l first eigenvectors of the unnormalized Laplacian matrix.
-    """
-    # We compute the Laplacian matrix of g. It is necessary to convert
-    # it to floating-point type.
-    L = nx.laplacian_matrix(g).asfptype()
-    # We compute the first k eigenvectors (the k smallest in magnitude)
-    if l is None:
-        l = k
-    eigs, u = linalg.eigsh(L, l, which='SM')
-    kmeans = cluster.KMeans(n_clusters=k).fit(u)
-    return kmeans.labels_
-	    </code></pre>
-	  </section>
-	  
-	  <section data-state="sbmspectral">
-	    <h5>Application to the Stochastic Block Model</h5>
-	    <div id="sbmspectral"></div>
-	  </section>
-	</section>
-
-	<section>
-	  <section>
-	    <h2>Optimization</h2>
-	    <h5>Modularity</h5>
-	    $$ Q = \frac{1}{2m} \sum_{i,j} \left( A_{ij} - \frac{k_i k_j}{2m} \right) \delta(C_i, C_j) $$
-	  </section>
-
-	  <section data-state="ringofcliques">
-	    <h5>Limitations</h5>
-	    <ul>
-	      <li class="fragment" data-fragment-index="0"> Modularity maximization is NP-hard
-	      <li class="fragment" data-fragment-index="1"> high-$Q$ partition not necessarily similar to each other
-	      <li class="fragment" data-fragment-index="2"> The measure is not as good as it looks (preferential scale for communities)
-	    </ul>
-	    <div id="ringofcliques" class="fragment" data-fragment-index="2"></div>
-	  </section>
-	</section>
-
-	<section>
-	  <section>
-	    <h2>Application: Zachary's karate club</h2>
-	    <pre><code data-trim class="py">
-node2cluster = community.best_partition(g)
-cluster2node = {}
-for k, v in node2cluster.items():
-    cluster2node.setdefault(v, []).append(k)
-
-labels = list(node2cluster.values())
-pos = nx.spring_layout(g)
-nx.draw(g, pos, node_color=labels, node_size=50, width=0.3)
-	    </code></pre>
-	  </section>
-
-	  <section data-state="karate">
-	    <h5>Zachary's karate club</h5>
-	    <div id="karate"></div>
-	  </section>
-	</section>
-
-	<section>
-	  <h2>Answer to limitations?</h2>
-	  <img src="consensus.png" alt="consensus" width="640">
-	  <br/>
-	  Consensus clustering
-	</section>
-
-
-
-	<section>
-	  <h1>Next steps</h1>
-	</section>
-
-	<section>
-	  <h2>Dynamic methods</h2>
-	  <ul>
-	    <li> Run dynamical processes on the network (diffusion, spin dynamics, synchronisation)
-	    <li> Random walk dynamics to estimate the similarity between pairs of vertices
-	    <li> Methods from statistical physics (belief propagation)
-	  </ul>
-	</section>
-
-	<section>
-	  <h2>Overlapping communities</h2>
-	  <ul>
-	    <li> <em>Edge</em> clustering vs. <em>vertex</em> clustering
-	    <li> Hierarchical structure <em>(dendrograms)</em>
-	    <li> <em>Soft</em> clustering vs. <em>hard</em> clustering
-	    <li> <em>Cover</em> vs. <em>partition</em>
-	  </ul>
-	</section>
-
-	<section>
-	  <h2>Bibliography</h2>
-	  <iframe class="stretch" src="p3a.html" seamless></iframe>
+	<section data-state="induced">
+	  <h2>Graphe des blocs</h2>
+	  <div id="induced"></div>
 	</section>
 	
       </div>
@@ -428,6 +269,89 @@ nx.draw(g, pos, node_color=labels, node_size=50, width=0.3)
       .force("center", d3.forceCenter(width / 2, height / 2));
 
       d3.json("sbm.json", function(error, graph) {
+      if (error) throw error;
+
+      var link = svg.append("g")
+      .attr("class", "links")
+      .selectAll("line")
+      .data(graph.links)
+      .enter().append("line")
+      .attr("stroke", "lightgray")
+      .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+      var node = svg.append("g")
+      .attr("class", "nodes")
+      .selectAll("circle")
+      .data(graph.nodes)
+      .enter().append("circle")
+      .attr("r", 5)
+      .attr("fill", function(d) { return color(d.group); })
+      .call(d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended));
+
+      node.append("title")
+      .text(function(d) { return d.id; });
+
+      simulation
+      .nodes(graph.nodes)
+      .on("tick", ticked);
+
+      simulation.force("link")
+      .links(graph.links);
+
+      function ticked() {
+      link
+      .attr("x1", function(d) { return d.source.x; })
+      .attr("y1", function(d) { return d.source.y; })
+      .attr("x2", function(d) { return d.target.x; })
+      .attr("y2", function(d) { return d.target.y; });
+
+      node
+      .attr("cx", function(d) { return d.x; })
+      .attr("cy", function(d) { return d.y; });
+      }
+      });
+
+      function dragstarted(d) {
+      if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+      }
+
+      function dragged(d) {
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
+      }
+
+      function dragended(d) {
+      if (!d3.event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+      }
+      })
+      
+    </script>
+
+
+    <script type="text/javascript">
+      Reveal.addEventListener( 'sbm2', function() {
+
+      var width=960, height=600;
+      
+      var svg = d3.select("#sbm2").selectAll('svg').data([0]).enter().append("svg")
+      .attr("width", width)
+      .attr("height", height);
+      
+      var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+      var simulation = d3.forceSimulation()
+      .force("link", d3.forceLink().id(function(d) { return d.id; }))
+      .force("charge", d3.forceManyBody())
+      .force("center", d3.forceCenter(width / 2, height / 2));
+
+      d3.json("sbm2.json", function(error, graph) {
       if (error) throw error;
 
       var link = svg.append("g")
@@ -739,6 +663,89 @@ nx.draw(g, pos, node_color=labels, node_size=50, width=0.3)
       })
       
     </script>
+
+    <script type="text/javascript">
+      Reveal.addEventListener( 'induced', function() {
+
+      var width=960, height=600;
+      
+      var svg = d3.select("#induced").selectAll('svg').data([0]).enter().append("svg")
+      .attr("width", width)
+      .attr("height", height);
+      
+      var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+      var simulation = d3.forceSimulation()
+      .force("link", d3.forceLink().id(function(d) { return d.id; }))
+      .force("charge", d3.forceManyBody())
+      .force("center", d3.forceCenter(width / 2, height / 2));
+
+      d3.json("induced.json", function(error, graph) {
+      if (error) throw error;
+
+      var link = svg.append("g")
+      .attr("class", "links")
+      .selectAll("line")
+      .data(graph.links)
+      .enter().append("line")
+      .attr("stroke", "lightgray")
+      .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+
+      var node = svg.append("g")
+      .attr("class", "nodes")
+      .selectAll("circle")
+      .data(graph.nodes)
+      .enter().append("circle")
+      .attr("r", 5)
+      .attr("fill", function(d) { return color(d.group); })
+      .call(d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended));
+
+      node.append("title")
+      .text(function(d) { return d.id; });
+
+      simulation
+      .nodes(graph.nodes)
+      .on("tick", ticked);
+
+      simulation.force("link")
+      .links(graph.links);
+
+      function ticked() {
+      link
+      .attr("x1", function(d) { return d.source.x; })
+      .attr("y1", function(d) { return d.source.y; })
+      .attr("x2", function(d) { return d.target.x; })
+      .attr("y2", function(d) { return d.target.y; });
+
+      node
+      .attr("cx", function(d) { return d.x; })
+      .attr("cy", function(d) { return d.y; });
+      }
+      });
+
+      function dragstarted(d) {
+      if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+      }
+
+      function dragged(d) {
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
+      }
+
+      function dragended(d) {
+      if (!d3.event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+      }
+      })
+      
+    </script>
+    
 
   </body>
 </html>
